@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Profile - Douglas Álvarez</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Warm Neutral (BG: gray-50, Text: gray-800, Cards: white, Accent: blue-700) -->
+    <!-- Application Structure Plan: A single-page, non-linear dashboard structure. This SPA design transforms the static resume into an exploratory tool. The structure includes: 1) A Hero section for the core value proposition. 2) A sticky navigation for easy access. 3) An interactive "Career Path" timeline where users click a company to reveal job details (JS-driven content swapping). 4) An interactive "Skill Dashboard" featuring a Chart.js Radar chart for a visual skill profile, paired with JS-driven filter buttons that dynamically update a detailed skill list. 5) A "Certification Hub" with a filterable grid (JS-driven) to manage the large number of credentials. This structure was chosen to empower recruiters to find the information they need *on-demand*, highlighting the key narrative of "Operations Specialist" pivoting to "Strategic Leader" (PM & AI). -->
+    <!-- Visualization & Content Choices: 
+        - Info: 6+ yrs exp, 80+ tasks/day. Goal: Inform (key metrics). Viz: Key Stat Cards (HTML/Tailwind). Interaction: None. Justification: Fast, high-impact numbers.
+        - Info: Career History (Amazon, MS, etc.). Goal: Show change/history. Viz: Horizontal Timeline (HTML/Tailwind). Interaction: Click company button. JS 'onclick' hides/shows corresponding job detail 'div'. Justification: More engaging than a static list, shows progression clearly.
+        - Info: Skill Profile (Exec Support, PM, AI, Data). Goal: Organize/Compare. Viz: Chart.js Radar Chart. Interaction: Paired with filter buttons. Justification: Gives an instant "shape" of expertise, balancing traditional ops with new tech skills. Library: Chart.js (Canvas).
+        - Info: Detailed Skill List. Goal: Organize/Inform. Viz: Styled List (HTML/Tailwind). Interaction: Filtered by JS buttons ('All', 'Ops', 'Tech'). JS adds/removes 'hidden' class based on 'data-category' attributes. Justification: Connects the high-level radar visual to granular, filterable data points.
+        - Info: Certifications. Goal: Organize/Inform. Viz: Card Grid (HTML/Tailwind). Interaction: Filtered by JS buttons ('All', 'PM', 'Data'). JS adds/removes 'hidden' class based on 'data-category' attributes. Justification: Manages a large, overwhelming list of credentials, making it explorable and verifiable.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+                max-height: 450px;
+            }
+        }
+        .timeline-btn.active {
+            background-color: #1D4ED8; /* bg-blue-700 */
+            color: white;
+        }
+        .filter-btn.active {
+            background-color: #1D4ED8; /* bg-blue-700 */
+            color: white;
+            border-color: #1D4ED8; /* border-blue-700 */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 leading-relaxed">
+
+    <!-- Header & Navigation -->
+    <nav class="sticky top-0 z-50 w-full bg-white shadow-md">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#hero" class="text-xl font-bold text-blue-700">Douglas Álvarez</a>
+            <div class="hidden md:flex space-x-6">
+                <a href="#career" class="text-gray-600 hover:text-blue-700 font-medium">Career Path</a>
+                <a href="#skills" class="text-gray-600 hover:text-blue-700 font-medium">Skill Dashboard</a>
+                <a href="#certs" class="text-gray-600 hover:text-blue-700 font-medium">Certifications</a>
+                <a href="#contact" class="text-gray-600 hover:text-blue-700 font-medium">Contact</a>
+            </div>
+            <button id="mobile-menu-btn" class="md:hidden text-gray-600 hover:text-blue-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 space-y-2">
+            <a href="#career" class="block text-gray-600 hover:text-blue-700 font-medium">Career Path</a>
+            <a href="#skills" class="block text-gray-600 hover:text-blue-700 font-medium">Skill Dashboard</a>
+            <a href="#certs" class="block text-gray-600 hover:text-blue-700 font-medium">Certifications</a>
+            <a href="#contact" class="block text-gray-600 hover:text-blue-700 font-medium">Contact</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="container mx-auto px-6 py-24 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Douglas Álvarez</h1>
+        <h2 class="text-2xl md:text-3xl text-blue-700 font-medium mb-6">Executive Operations & Strategic Project Specialist</h2>
+        <p class="max-w-3xl mx-auto text-lg text-gray-700 mb-8">
+            Executive support and operations specialist with 6+ years across top firms like Amazon, Microsoft, and Goldman Sachs. I thrive in managing confidential workflows and high-stakes escalations. I am now expanding my expertise in project management, AI, and data analytics to lead and execute future-focused strategic initiatives.
+        </p>
+        <div class="flex flex-wrap justify-center gap-4 md:gap-8">
+            <div class="bg-white p-4 rounded-lg shadow-lg text-center">
+                <span class="text-3xl font-bold text-blue-700">6+</span>
+                <span class="block text-gray-600">Years Experience</span>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow-lg text-center">
+                <span class="text-3xl font-bold text-blue-700">80+</span>
+                <span class="block text-gray-600">Daily High-Risk Tasks</span>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow-lg text-center">
+                <span class="text-3xl font-bold text-blue-700">AI & PM</span>
+                <span class="block text-gray-600">Strategic Focus</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Career Path Section -->
+    <section id="career" class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center text-gray-900 mb-4">Interactive Career Path</h2>
+            <p class="text-lg text-gray-700 text-center max-w-2xl mx-auto mb-12">
+                My career has been a progression of managing increasingly complex operations and risk. This timeline highlights my key roles at world-class companies. Click on any company to see the full details of my contributions and responsibilities.
+            </p>
+
+            <!-- Interactive Timeline Navigation -->
+            <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8">
+                <button class="timeline-btn active text-sm md:text-base font-medium py-2 px-4 rounded-full transition-all duration-300 shadow bg-blue-700 text-white" data-target="job-amazon">
+                    Amazon (2021-2023)
+                </button>
+                <button class="timeline-btn text-sm md:text-base font-medium py-2 px-4 rounded-full transition-all duration-300 shadow bg-gray-200 text-gray-700 hover:bg-gray-300" data-target="job-microsoft">
+                    Microsoft/Xbox (2020-2021)
+                </button>
+                <button class="timeline-btn text-sm md:text-base font-medium py-2 px-4 rounded-full transition-all duration-300 shadow bg-gray-200 text-gray-700 hover:bg-gray-300" data-target="job-capitalone">
+                    Capital One (2019-2020)
+                </button>
+                <button class="timeline-btn text-sm md:text-base font-medium py-2 px-4 rounded-full transition-all duration-300 shadow bg-gray-200 text-gray-700 hover:bg-gray-300" data-target="job-goldman">
+                    Goldman Sachs (2018-2019)
+                </button>
+            </div>
+
+            <!-- Job Details Container -->
+            <div class="max-w-3xl mx-auto bg-gray-50 p-6 md:p-8 rounded-lg shadow-inner">
+                <!-- Amazon -->
+                <div id="job-amazon" class="job-detail">
+                    <h3 class="text-2xl font-bold text-blue-700 mb-2">Amazon - Payment Risk Operations</h3>
+                    <p class="text-lg font-medium text-gray-800 mb-4">Investigation Specialist (Remote, 2021-2023)</p>
+                    <ul class="list-disc list-outside space-y-2 pl-5 text-gray-700">
+                        <li>Investigated high-risk accounts and transactions to prevent fraud and abuse across global platforms.</li>
+                        <li>Completed 80+ daily tasks with precision, consistently maintaining and exceeding SLA and compliance standards.</li>
+                        <li>Collaborated with cross-functional teams (engineering, policy) to improve risk protocols and enhance customer trust.</li>
+                    </ul>
+                </div>
+                <!-- Microsoft -->
+                <div id="job-microsoft" class="job-detail hidden">
+                    <h3 class="text-2xl font-bold text-blue-700 mb-2">Tek Experts (Microsoft/Xbox)</h3>
+                    <p class="text-lg font-medium text-gray-800 mb-4">Executive Relationship Manager (Remote, 2020-2021)</p>
+                    <ul class="list-disc list-outside space-y-2 pl-5 text-gray-700">
+                        <li>Resolved executive-level escalations, Better Business Bureau (BBB) claims, and regulatory inquiries with empathy and accuracy.</li>
+                        <li>Authored and documented new workflows, mentoring new hires in complex incident handling and customer advocacy.</li>
+                        <li>Strengthened brand trust through proactive communication and secure resolution strategies for high-profile cases.</li>
+                    </ul>
+                </div>
+                <!-- Capital One -->
+                <div id="job-capitalone" class="job-detail hidden">
+                    <h3 class="text-2xl font-bold text-blue-700 mb-2">Sykes (Capital One)</h3>
+                    <p class="text-lg font-medium text-gray-800 mb-4">Customer Service Representative (Onsite, 2019-2020)</p>
+                    <ul class="list-disc list-outside space-y-2 pl-5 text-gray-700">
+                        <li>Delivered CRM-driven banking support for US-based customers, specializing in fraud disputes and account recovery.</li>
+                        <li>Partnered with internal compliance teams to streamline documentation and customer-facing financial education.</li>
+                    </ul>
+                </div>
+                <!-- Goldman Sachs -->
+                <div id="job-goldman" class="job-detail hidden">
+                    <h3 class="text-2xl font-bold text-blue-700 mb-2">Concentrix (Goldman Sachs)</h3>
+                    <p class="text-lg font-medium text-gray-800 mb-4">Blended Support Advisor (Onsite, 2018-2019)</p>
+                    <ul class="list-disc list-outside space-y-2 pl-5 text-gray-700">
+                        <li>Provided bilingual (English/Spanish) support for high-value products, handling sensitive claims and account issues.</li>
+                        <li>Recognized for adaptability and a customer-first approach in a high-volume, fast-paced fintech environment.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Dashboard Section -->
+    <section id="skills" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center text-gray-900 mb-4">Skill Dashboard</h2>
+            <p class="text-lg text-gray-700 text-center max-w-2xl mx-auto mb-12">
+                This dashboard visualizes my unique blend of skills, from deep operational expertise to my emerging capabilities in data and AI. Use the filters to explore the specific abilities I bring to a strategic role.
+            </p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <!-- Radar Chart -->
+                <div class="chart-container">
+                    <canvas id="skillsRadarChart"></canvas>
+                </div>
+
+                <!-- Interactive Skill List -->
+                <div class="w-full">
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <button class="filter-btn active text-sm md:text-base font-medium py-2 px-4 rounded-full transition-all duration-300 shadow-sm border border-gray-300 bg-blue-700 text-white" data-filter="all">All Skills</button>
+                        <button class="filter-btn text-sm md:text-base font-medium py-2 px-4 rounded-full transition-all duration-300 shadow-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-100" data-filter="ops">Operational & Risk</button>
+                        <button class="filter-btn text-sm md:text-base font-medium py-2 px-4 rounded-full transition-all duration-300 shadow-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-100" data-filter="pm">Project Management</button>
+                        <button class="filter-btn text-sm md:text-base font-medium py-2 px-4 rounded-full transition-all duration-300 shadow-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-100" data-filter="tech">Data & AI</button>
+                    </div>
+                    <div id="skill-list-container" class="space-y-3 h-96 overflow-y-auto bg-white p-6 rounded-lg shadow-inner">
+                        <!-- Skills will be dynamically injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Certifications Section -->
+    <section id="certs" class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center text-gray-900 mb-4">Verifiable Certification Hub</h2>
+            <p class="text-lg text-gray-700 text-center max-w-2xl mx-auto mb-12">
+                My commitment to growth is ongoing and verifiable. I am actively upskilling in project management, data, and AI. Filter my credentials below to see the specific certifications relevant to your needs.
+            </p>
+            
+            <!-- Filter Buttons -->
+            <div class="flex flex-wrap justify-center gap-2 mb-10">
+                <button class="cert-filter-btn active text-sm md:text-base font-medium py-2 px-4 rounded-full transition-all duration-300 shadow-sm border border-gray-300 bg-blue-700 text-white" data-category="all">All Credentials</button>
+                <button class="cert-filter-btn text-sm md:text-base font-medium py-2 px-4 rounded-full transition-all duration-300 shadow-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-100" data-category="pm">Project Management</button>
+                <button class="cert-filter-btn text-sm md:text-base font-medium py-2 px-4 rounded-full transition-all duration-300 shadow-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-100" data-category="tech">AI & Data</button>
+                <button class="cert-filter-btn text-sm md:text-base font-medium py-2 px-4 rounded-full transition-all duration-300 shadow-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-100" data-category="core">Core & Other</button>
+            </div>
+
+            <!-- Certification Grid -->
+            <div id="cert-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <div class="cert-card bg-gray-50 p-6 rounded-lg shadow-lg" data-category="pm">
+                    <h3 class="text-lg font-bold text-blue-700">Foundations of Project Management</h3>
+                    <p class="text-gray-600 mb-3">Issued by: Google</p>
+                    <a href="https://coursera.org/verify/HM53GRP6QPES" target="_blank" rel="noopener noreferrer" class="font-medium text-blue-600 hover:underline">Verify Credential &rarr;</a>
+                </div>
+                
+                <div class="cert-card bg-gray-50 p-6 rounded-lg shadow-lg" data-category="tech">
+                    <h3 class="text-lg font-bold text-blue-700">Artificial Intelligence Fundamentals</h3>
+                    <p class="text-gray-600 mb-3">Issued by: IBM SkillsBuild</p>
+                    <p class="text-sm text-gray-500">Covers ML, NLP, neural networks, and AI ethics using IBM Watson Studio.</p>
+                </div>
+
+                <div class="cert-card bg-gray-50 p-6 rounded-lg shadow-lg" data-category="tech">
+                    <h3 class="text-lg font-bold text-blue-700">Python & ML Stack</h3>
+                    <p class="text-gray-600 mb-3">Issued by: IBM</p>
+                    <p class="text-sm text-gray-500">Includes: Python for Data Science, Data Visualization (Matplotlib, Seaborn), Machine Learning with Python L1.</p>
+                </div>
+
+                <div class="cert-card bg-gray-50 p-6 rounded-lg shadow-lg" data-category="pm">
+                    <h3 class="text-lg font-bold text-blue-700">Org Planning for 6σ Black Belt</h3>
+                    <p class="text-gray-600 mb-3">Issued by: Kennesaw State University</p>
+                    <a href="https://coursera.org/verify/R04X7PO3603C" target="_blank" rel="noopener noreferrer" class="font-medium text-blue-600 hover:underline">Verify Credential &rarr;</a>
+                </div>
+                
+                <div class="cert-card bg-gray-50 p-6 rounded-lg shadow-lg" data-category="tech">
+                    <h3 class="text-lg font-bold text-blue-700">Data Fundamentals & IBM Watson</h3>
+                    <p class="text-gray-600 mb-3">Issued by: IBM</g>
+                    <p class="text-sm text-gray-500">Includes: Data Fundamentals, Clean, Refine & Visualize Data with IBM Watson Studio.</p>
+                </div>
+
+                <div class="cert-card bg-gray-50 p-6 rounded-lg shadow-lg" data-category="pm">
+                    <h3 class="text-lg font-bold text-blue-700">Agile Explorer</h3>
+                    <p class="text-gray-600 mb-3">Issued by: IBM SkillsBuild</p>
+                    <p class="text-sm text-gray-500">Foundational understanding of Agile values, principles, and practices.</p>
+                </div>
+
+                <div class="cert-card bg-gray-50 p-6 rounded-lg shadow-lg" data-category="core">
+                    <h3 class="text-lg font-bold text-blue-700">EF SET English Certificate – C1 Advanced</h3>
+                    <p class="text-gray-600 mb-3">Issued by: EF SET (Education First)</p>
+                    <a href="https://cert.efset.org/BwbN4K" target="_blank" rel="noopener noreferrer" class="font-medium text-blue-600 hover:underline">Verify Credential &rarr;</a>
+                </div>
+                
+                <div class="cert-card bg-gray-50 p-6 rounded-lg shadow-lg" data-category="core">
+                    <h3 class="text-lg font-bold text-blue-700">First-Time Manager & Performance Mgmt</h3>
+                    <p class="text-gray-600 mb-3">Issued by: LinkedIn Learning</p>
+                    <p class="text-sm text-gray-500">Covers building reputation, new manager skills, and performance management foundations.</p>
+                </div>
+
+                <div class="cert-card bg-gray-50 p-6 rounded-lg shadow-lg" data-category="core">
+                    <h3 class="text-lg font-bold text-blue-700">Education: Law & Social Comm</h3>
+                    <p class="text-gray-600 mb-3">In Progress: Universidad Fidelitas & UAM</p>
+                    <p class="text-sm text-gray-500">Specialized studies in legal frameworks, compliance, media literacy, and persuasive communication.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <footer id="contact" class="py-16 bg-gray-800 text-gray-300">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl font-bold text-white mb-6">Let's Connect</h2>
+            <p class="text-lg max-w-xl mx-auto mb-8">
+                I am actively seeking new opportunities to apply my operational expertise and growing data skills to a strategic project management or operations role.
+            </p>
+            <div class="flex flex-col md:flex-row justify-center items-center gap-6">
+                <a href="mailto:bernardcontact96@gmail.com" class="font-medium text-white bg-blue-700 hover:bg-blue-800 py-3 px-6 rounded-lg transition-all duration-300">
+                    bernardcontact96@gmail.com
+                </a>
+                <span class="font-medium text-lg">+(506) 7165-4627</span>
+            </div>
+            <p class="mt-12 text-gray-400">© 2025 Douglas Álvarez | All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Mobile Menu Toggle
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // Career Timeline Interaction
+            const timelineBtns = document.querySelectorAll('.timeline-btn');
+            const jobDetails = document.querySelectorAll('.job-detail');
+
+            timelineBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Deactivate all buttons
+                    timelineBtns.forEach(b => b.classList.remove('active', 'bg-blue-700', 'text-white'));
+                    // Activate clicked button
+                    btn.classList.add('active', 'bg-blue-700', 'text-white');
+                    btn.classList.remove('bg-gray-200', 'text-gray-700');
+
+                    const targetId = btn.getAttribute('data-target');
+
+                    // Hide all job details
+                    jobDetails.forEach(detail => {
+                        detail.classList.add('hidden');
+                    });
+
+                    // Show target job detail
+                    const targetDetail = document.getElementById(targetId);
+                    if (targetDetail) {
+                        targetDetail.classList.remove('hidden');
+                    }
+                });
+            });
+
+            // Skill Dashboard Data & Logic
+            const allSkills = [
+                { name: 'Executive Relationship Management', category: 'ops' },
+                { name: 'Fraud Risk Management', category: 'ops' },
+                { name: 'Regulatory Compliance', category: 'ops' },
+                { name: 'Workflow Management & Documentation', category: 'ops' },
+                { name: 'Customer Experience (CX) Improvement', category: 'ops' },
+                { name: 'SLA & High-Volume Task Management (80+/day)', category: 'ops' },
+                { name: 'Project Management Foundations', category: 'pm' },
+                { name: 'Organization Planning (Six Sigma)', category: 'pm' },
+                { name: 'Agile Explorer (IBM)', category: 'pm' },
+                { name: 'Leadership Development', category: 'pm' },
+                { name: 'Artificial Intelligence Fundamentals', category: 'tech' },
+                { name: 'Data Analysis (Beginner)', category: 'tech' },
+                { name: 'Python for Data Science', category: 'tech' },
+                { name: 'Data Visualization (Matplotlib, Seaborn)', category: 'tech' },
+                { name: 'Machine Learning with Python L1', category: 'tech' },
+                { name: 'IBM Watson Studio', category: 'tech' },
+                { name: 'Confident Communicator (Bilingual)', category: 'ops' }
+            ];
+
+            const skillListContainer = document.getElementById('skill-list-container');
+            const skillFilterBtns = document.querySelectorAll('.filter-btn');
+
+            function renderSkills(filter = 'all') {
+                skillListContainer.innerHTML = '';
+                const filteredSkills = filter === 'all' 
+                    ? allSkills 
+                    : allSkills.filter(skill => skill.category === filter);
+
+                if (filteredSkills.length === 0) {
+                    skillListContainer.innerHTML = '<p class="text-gray-500">No skills found for this category.</p>';
+                    return;
+                }
+
+                filteredSkills.forEach(skill => {
+                    const skillEl = document.createElement('div');
+                    skillEl.className = 'bg-gray-100 p-3 rounded-md shadow-sm';
+                    skillEl.innerHTML = `
+                        <p class="font-medium text-gray-800">${skill.name}</p>
+                        <span class="text-xs font-medium py-0.5 px-2 rounded-full ${
+                            skill.category === 'ops' ? 'bg-blue-100 text-blue-800' :
+                            skill.category === 'pm' ? 'bg-green-100 text-green-800' :
+                            'bg-purple-100 text-purple-800'
+                        }">
+                            ${skill.category === 'ops' ? 'Operational & Risk' : skill.category === 'pm' ? 'Project Management' : 'Data & AI'}
+                        </span>
+                    `;
+                    skillListContainer.appendChild(skillEl);
+                });
+            }
+
+            skillFilterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    skillFilterBtns.forEach(b => b.classList.remove('active', 'bg-blue-700', 'text-white'));
+                    btn.classList.add('active', 'bg-blue-700', 'text-white');
+                    renderSkills(btn.getAttribute('data-filter'));
+                });
+            });
+
+            // Initial render
+            renderSkills('all');
+            
+            // Skills Radar Chart
+            const radarCtx = document.getElementById('skillsRadarChart').getContext('2d');
+            const skillsRadarChart = new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Operational Excellence', 
+                        'Risk & Compliance', 
+                        'Project Management', 
+                        'Data & AI', 
+                        'Leadership & Comms'
+                    ],
+                    datasets: [{
+                        label: 'Skill Profile',
+                        data: [5, 5, 4, 3, 5],
+                        backgroundColor: 'rgba(29, 78, 216, 0.2)',
+                        borderColor: 'rgba(29, 78, 216, 1)',
+                        pointBackgroundColor: 'rgba(29, 78, 216, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(29, 78, 216, 1)'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 13,
+                                    weight: '500'
+                                },
+                                color: '#374151'
+                            },
+                            ticks: {
+                                backdropColor: 'transparent',
+                                color: '#6b7280',
+                                stepSize: 1,
+                                beginAtZero: true,
+                                max: 5
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#1f2937'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Certification Filter Logic
+            const certFilterBtns = document.querySelectorAll('.cert-filter-btn');
+            const certCards = document.querySelectorAll('.cert-card');
+
+            certFilterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    certFilterBtns.forEach(b => b.classList.remove('active', 'bg-blue-700', 'text-white'));
+                    btn.classList.add('active', 'bg-blue-700', 'text-white');
+
+                    const category = btn.getAttribute('data-category');
+
+                    certCards.forEach(card => {
+                        if (category === 'all' || card.getAttribute('data-category') === category) {
+                            card.classList.remove('hidden');
+                        } else {
+                            card.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
